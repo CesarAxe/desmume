@@ -30,6 +30,19 @@ class Task;
 class SoftRasterizerRenderer;
 struct edge_fx_fl;
 
+struct SoftRasterizerPrecalculation
+{
+	Vector2s64 positionCeil;
+	
+	float zPositionNormalized;
+	float invWPositionNormalized;
+	Vector2f32 texCoordNormalized;
+	Color3f32 colorNormalized;
+	
+	float yPrestep;
+};
+typedef struct SoftRasterizerPrecalculation SoftRasterizerPrecalculation;
+
 struct SoftRasterizerClearParam
 {
 	SoftRasterizerRenderer *renderer;
@@ -103,7 +116,8 @@ protected:
 	
 	SoftRasterizerRenderer *_softRender;
 	SoftRasterizerTexture *_currentTexture;
-	const VERT *_verts[MAX_CLIPPED_VERTS];
+	const NDSVertex *_currentVtx[MAX_CLIPPED_VERTS];
+	const SoftRasterizerPrecalculation *_currentPrecalc[MAX_CLIPPED_VERTS];
 	u8 _textureWrapMode;
 	
 	Render3DError _SetupTexture(const POLY &thePoly, size_t polyRenderIndex);
@@ -112,12 +126,12 @@ protected:
 	
 	template<bool ISSHADOWPOLYGON> FORCEINLINE void _shade(const PolygonMode polygonMode, const Color4u8 vtxColor, const Vector2f32 &texCoord, Color4u8 &outColor);
 	template<bool ISFRONTFACING, bool ISSHADOWPOLYGON> FORCEINLINE void _pixel(const POLYGON_ATTR polyAttr, const bool isTranslucent, const size_t fragmentIndex, Color4u8 &dstColor, const Color4f32 &vtxColorFloat, float invu, float invv, float z, float w);
-	template<bool ISFRONTFACING, bool ISSHADOWPOLYGON, bool USELINEHACK> FORCEINLINE void _drawscanline(const POLYGON_ATTR polyAttr, const bool isTranslucent, Color4u8 *dstColor, const size_t framebufferWidth, const size_t framebufferHeight, edge_fx_fl *pLeft, edge_fx_fl *pRight);
+	template<bool ISFRONTFACING, bool ISSHADOWPOLYGON, bool USELINEHACK> FORCEINLINE void _drawscanline(const POLYGON_ATTR polyAttr, const bool isTranslucent, Color4u8 *dstColor, const size_t framebufferWidth, const size_t framebufferHeight, const edge_fx_fl *pLeft, const edge_fx_fl *pRight);
 	template<bool SLI, bool ISFRONTFACING, bool ISSHADOWPOLYGON, bool USELINEHACK> void _runscanlines(const POLYGON_ATTR polyAttr, const bool isTranslucent, Color4u8 *dstColor, const size_t framebufferWidth, const size_t framebufferHeight, const bool isHorizontal, edge_fx_fl *left, edge_fx_fl *right);
 	
 #ifdef ENABLE_SSE2
 	template<bool ISFRONTFACING, bool ISSHADOWPOLYGON> FORCEINLINE void _pixel_SSE2(const POLYGON_ATTR polyAttr, const bool isTranslucent, const size_t fragmentIndex, Color4u8 &dstColor, const __m128 &vtxColorFloat, float invu, float invv, float z, float w);
-	template<bool ISFRONTFACING, bool ISSHADOWPOLYGON, bool USELINEHACK> FORCEINLINE void _drawscanline_SSE2(const POLYGON_ATTR polyAttr, const bool isTranslucent, Color4u8 *dstColor, const size_t framebufferWidth, const size_t framebufferHeight, edge_fx_fl *pLeft, edge_fx_fl *pRight);
+	template<bool ISFRONTFACING, bool ISSHADOWPOLYGON, bool USELINEHACK> FORCEINLINE void _drawscanline_SSE2(const POLYGON_ATTR polyAttr, const bool isTranslucent, Color4u8 *dstColor, const size_t framebufferWidth, const size_t framebufferHeight, const edge_fx_fl *pLeft, const edge_fx_fl *pRight);
 #endif
 	
 	template<int TYPE> FORCEINLINE void _rot_verts();
@@ -159,6 +173,8 @@ protected:
 	size_t _customLinesPerThread;
 	size_t _customPixelsPerThread;
 	
+	SoftRasterizerPrecalculation *_precalc;
+	
 	u8 _fogTable[32768];
 	Color4u8 _edgeMarkTable[8];
 	bool _edgeMarkDisabled[8];
@@ -181,7 +197,7 @@ protected:
 	virtual Render3DError ClearUsingValues(const Color4u8 &clearColor6665, const FragmentAttributes &clearAttributes);
 	
 public:
-	int _debug_drawClippedUserPoly;
+	size_t _debug_drawClippedUserPoly;
 	CACHE_ALIGN Color4u8 toonColor32LUT[32];
 	FragmentAttributesBuffer *_framebufferAttributes;
 	GFX3D_State *currentRenderState;
@@ -194,9 +210,12 @@ public:
 	virtual ClipperMode GetPreferredPolygonClippingMode() const;
 	
 	void GetAndLoadAllTextures();
+	void RasterizerPrecalculate();
 	Render3DError RenderEdgeMarkingAndFog(const SoftRasterizerPostProcessParams &param);
 	
 	SoftRasterizerTexture* GetLoadedTextureFromPolygon(const POLY &thePoly, bool enableTexturing);
+	
+	const SoftRasterizerPrecalculation* GetPrecalculationList() const;
 	
 	// Base rendering methods
 	virtual Render3DError Reset();
