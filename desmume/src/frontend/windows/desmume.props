@@ -66,7 +66,7 @@
 	<!-- TODO: throw errors here instead -->
 	<PropertyGroup>
 		<SSE_Level Condition="'$(SSE_Level)' == ''">20</SSE_Level>
-		<AVX_Level Condition="'$(AVX_Level)' == ''">0</AVX_Level>
+		<AVX_Level Condition="'$(AVX_Level)' == ''">14</AVX_Level>
 		<!-- dont use optimizations the compiler cant handle. this isn't accurate to the compiler capabilities but we're only supporting 2010 and 2015 -->
 		<SSE_Level Condition="'$(NDS_VSVER)' &lt; '14' AND '$(SSE_Level)' &gt; '20'">20</SSE_Level>
 		<!-- validation: x64 14.0 can't handle SSE_Level 1.0 and anyway SSE2 is automatically available -->
