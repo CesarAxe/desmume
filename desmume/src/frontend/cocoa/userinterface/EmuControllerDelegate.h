@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2013-2022 DeSmuME Team
+	Copyright (C) 2013-2023 DeSmuME Team
 
 	This file is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -42,8 +42,6 @@ class AudioSampleBlockGenerator;
 	CocoaDSRom *currentRom;
 	CocoaDSFirmware *cdsFirmware;
 	CocoaDSSpeaker *cdsSpeaker;
-	CocoaDSCheatManager *cdsCheats;
-	CocoaDSCheatManager *dummyCheatList;
 	
 	CheatWindowDelegate *cheatWindowDelegate;
 	MacScreenshotCaptureToolDelegate *screenshotCaptureToolDelegate;
@@ -56,8 +54,8 @@ class AudioSampleBlockGenerator;
 	NSObjectController *cheatWindowController;
 	NSObjectController *slot2WindowController;
 	NSArrayController *inputDeviceListController;
-	NSArrayController *cheatListController;
-	NSArrayController *cheatDatabaseController;
+	
+	NSMenu *cheatDatabaseRecentsMenu;
 	
 	RomInfoPanel *romInfoPanel;
 	
@@ -138,7 +136,6 @@ class AudioSampleBlockGenerator;
 @property (assign) CocoaDSRom *currentRom; // Don't rely on autorelease since the emulator doesn't support concurrent unloading
 @property (retain) CocoaDSFirmware *cdsFirmware;
 @property (retain) CocoaDSSpeaker *cdsSpeaker;
-@property (retain) CocoaDSCheatManager *cdsCheats;
 
 @property (readonly) IBOutlet CheatWindowDelegate *cheatWindowDelegate;
 @property (readonly) IBOutlet MacScreenshotCaptureToolDelegate *screenshotCaptureToolDelegate;
@@ -151,8 +148,8 @@ class AudioSampleBlockGenerator;
 @property (readonly) IBOutlet NSObjectController *cheatWindowController;
 @property (readonly) IBOutlet NSObjectController *slot2WindowController;
 @property (readonly) IBOutlet NSArrayController *inputDeviceListController;
-@property (readonly) IBOutlet NSArrayController *cheatListController;
-@property (readonly) IBOutlet NSArrayController *cheatDatabaseController;
+
+@property (readonly) IBOutlet NSMenu *cheatDatabaseRecentsMenu;
 
 @property (readonly) IBOutlet RomInfoPanel *romInfoPanel;
 
@@ -217,6 +214,9 @@ class AudioSampleBlockGenerator;
 - (IBAction) stopReplay:(id)sender;
 - (IBAction) importRomSave:(id)sender;
 - (IBAction) exportRomSave:(id)sender;
+- (IBAction) openCheatDatabaseFile:(id)sender;
+- (IBAction) clearCheatDatabaseRecents:(id)sender;
+- (IBAction) openRecentCheatDatabase:(id)sender;
 
 // Emulation Menu
 - (IBAction) toggleSpeedLimiter:(id)sender;
@@ -302,6 +302,7 @@ class AudioSampleBlockGenerator;
 - (BOOL) loadRomByURL:(NSURL *)romURL asynchronous:(BOOL)willLoadAsync;
 - (void) loadRomDidFinish:(NSNotification *)aNotification;
 - (BOOL) unloadRom;
+- (void) updateCheatDatabaseRecentsMenu:(NSNotification *)aNotification;
 
 - (void) addOutputToCore:(CocoaDSOutput *)theOutput;
 - (void) removeOutputFromCore:(CocoaDSOutput *)theOutput;
